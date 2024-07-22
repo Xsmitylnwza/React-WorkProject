@@ -1,3 +1,5 @@
+import styled from "styled-components";
+
 import Input from "../../ui/Input";
 import Form from "../../ui/Form";
 import Button from "../../ui/Button";
@@ -5,18 +7,11 @@ import FileInput from "../../ui/FileInput";
 import Textarea from "../../ui/Textarea";
 import {useForm} from "react-hook-form";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {createEditCabin} from "../../services/apiCabins";
+import {createCabin} from "../../services/apiCabins";
 import toast from "react-hot-toast";
 import FormRowZa from "../../ui/FormRow";
-import {useCreateCabin} from "./useCreateCabin";
-import {useEditCabin} from "./useEditCabin";
 
-function CreateCabinForm({cabinToEdit = {}, onCloseModal}) {
-  const {isCreating, createCabin} = useCreateCabin();
-  const {isEditting, editCabin} = useEditCabin();
-
-  const isWorking = isCreating || isEditting;
-
+function CreateCabinForm({cabinToEdit = {}}) {
   const {id: editId, ...editValues} = cabinToEdit;
   const isEditSession = Boolean(editId);
 
@@ -24,39 +19,32 @@ function CreateCabinForm({cabinToEdit = {}, onCloseModal}) {
     defaultValues: isEditSession ? editValues : {},
   });
   const {errors} = formState;
+  const queryClient = useQueryClient();
+  const {mutate, isLoading: isCreating} = useMutation({
+    mutationFn: createCabin,
+    onSuccess: () => {
+      toast.success("New cabin successfully created");
+      queryClient.invalidateQueries({queryKey: ["cabins"]});
+      reset();
+    },
+    onError: (err) => toast.error(err.message),
+  });
 
   function onSubmit(data) {
-    const image = typeof data.image === "string" ? data.image : data.image[0];
-
-    if (isEditSession)
-      editCabin(
-        {newCabinData: {...data, image}, id: editId},
-        {
-          onSuccess: (data) => reset(),
-        }
-      );
-    else
-      createCabin(
-        {...data, image: image},
-        {
-          onSuccess: (data) => reset(),
-        }
-      );
+    console.log(data.image[0]);
+    mutate({...data, image: data.image[0]});
   }
   function onError(errors) {
     console.log(errors);
   }
 
   return (
-    <Form
-      onSubmit={handleSubmit(onSubmit, onError)}
-      type={onCloseModal ? "modal" : "regular"}
-    >
+    <Form onSubmit={handleSubmit(onSubmit, onError)}>
       <FormRowZa label="Cabin name" error={errors?.name?.message}>
         <Input
           type="text"
           id="name"
-          disabled={isWorking}
+          disabled={isCreating}
           {...register("name", {
             required: "This feild is required",
             min: {
@@ -71,7 +59,7 @@ function CreateCabinForm({cabinToEdit = {}, onCloseModal}) {
         <Input
           type="number"
           id="maxCapacity"
-          disabled={isWorking}
+          disabled={isCreating}
           {...register("maxCapacity", {
             required: "This feild is required",
 
@@ -87,7 +75,7 @@ function CreateCabinForm({cabinToEdit = {}, onCloseModal}) {
         <Input
           type="number"
           id="regularPrice"
-          disabled={isWorking}
+          disabled={isCreating}
           {...register("regularPrice", {
             required: "This feild is required",
             min: {
@@ -102,7 +90,7 @@ function CreateCabinForm({cabinToEdit = {}, onCloseModal}) {
         <Input
           type="number"
           id="discount"
-          disabled={isWorking}
+          disabled={isCreating}
           defaultValue={0}
           {...register("discount", {
             required: "This feild is required",
@@ -120,7 +108,7 @@ function CreateCabinForm({cabinToEdit = {}, onCloseModal}) {
         <Textarea
           type="number"
           id="description"
-          disabled={isWorking}
+          disabled={isCreating}
           defaultValue=""
           {...register("description", {
             required: "This feild is required",
@@ -145,14 +133,10 @@ function CreateCabinForm({cabinToEdit = {}, onCloseModal}) {
 
       <FormRowZa>
         {/* type is an HTML attribute! */}
-        <Button
-          variation="secondary"
-          type="reset"
-          onClick={() => onCloseModal?.()}
-        >
+        <Button variation="secondary" type="reset">
           Cancel
         </Button>
-        <Button disabled={isWorking}>
+        <Button disabled={isCreating}>
           {isEditSession ? "Edit cabin" : "Add cabin"}
         </Button>
       </FormRowZa>
