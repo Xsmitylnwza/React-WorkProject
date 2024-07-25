@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { format, isToday } from "date-fns";
+import {format, isToday} from "date-fns";
 import {
   HiOutlineChatBubbleBottomCenterText,
   HiOutlineCheckCircle,
@@ -8,9 +8,9 @@ import {
 } from "react-icons/hi2";
 
 import DataItem from "../../ui/DataItem";
-import { Flag } from "../../ui/Flag";
 
-import { formatDistanceFromNow, formatCurrency } from "../../utils/helpers";
+import {formatDistanceFromNow, formatCurrency} from "../../utils/helpers";
+import {Flag} from "../../ui/Flag";
 
 const StyledBookingDataBox = styled.section`
   /* Box */
@@ -102,7 +102,7 @@ const Footer = styled.footer`
 `;
 
 // A purely presentational component
-function BookingDataBox({ booking }) {
+function BookingDataBox({booking}) {
   const {
     created_at,
     startDate,
@@ -115,8 +115,8 @@ function BookingDataBox({ booking }) {
     hasBreakfast,
     observations,
     isPaid,
-    guests: { fullName: guestName, email, country, countryFlag, nationalID },
-    cabins: { name: cabinName },
+    guests: {fullName: guestName, email, country, countryFlag, nationalID},
+    cabins: {name: cabinName},
   } = booking;
 
   return (
